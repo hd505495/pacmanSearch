@@ -88,10 +88,9 @@ def depthFirstSearch(problem):
             if problem.isGoalState(currState):
                 return actions
             else:
-                successors = problem.getSuccessors(currState)
-                for succState, succAction, succCost in successors:
-                    updatedActionsList = actions + [succAction]  # can only append list to list
-                    nextNode = (succState, updatedActionsList)
+                for childState, childAction, childCost in problem.getSuccessors(currState):
+                    updatedActionsList = actions + [childAction]  # can only append list to list
+                    nextNode = (childState, updatedActionsList)
                     fringe.push(nextNode)
     return actions
     #util.raiseNotDefined()
@@ -112,10 +111,9 @@ def breadthFirstSearch(problem):
             if problem.isGoalState(node):
                 return actions
             else:
-                successors = problem.getSuccessors(currState)
-                for succState, succAction, succCost in successors:
-                    updatedActionsList = actions + [succAction]  # can only append list to list
-                    nextNode = (succState, updatedActionsList)
+                for childState, childAction, childCost in problem.getSuccessors(currState):
+                    updatedActionsList = actions + [childAction]  # can only append list to list
+                    nextNode = (childState, updatedActionsList)
                     fringe.push(nextNode)
     return actions
 
@@ -143,12 +141,10 @@ def uniformCostSearch(problem):
             if problem.isGoalState(currState):
                 return actions
             else:
-                successors = problem.getSuccessors(currState)
-
-                for succState, succAction, succCost in successors:
-                    updatedActionsList = actions + [succAction]  # can only append list to list
-                    updatedCost = currCost + succCost
-                    nextNode = (succState, updatedActionsList, updatedCost)
+                for childState, childAction, childCost in problem.getSuccessors(currState):
+                    updatedActionsList = actions + [childAction]  # can only append list to list
+                    updatedCost = currCost + childCost
+                    nextNode = (childState, updatedActionsList, updatedCost)
 
                     # If item already in priority queue with higher priority, update its priority and rebuild the heap.
                     # If item already in priority queue with equal or lower priority, do nothing.
@@ -166,8 +162,35 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    explored = {}
+
+    node = (problem.getStartState(), [], 0)
+    frontier.push(node, 0)
+
+    while not frontier.isEmpty():
+        # priority has sorted, taking lowest cost node
+        currState, actions, currCost = frontier.pop()
+        explored[currState] = currCost
+
+        if problem.isGoalState(currState):
+            return actions
+        else:
+            for childState, childAction, childCost in problem.getSuccessors(currState):
+                updatedActionsList = actions + [childAction]  # can only append list to list
+                updatedCost = currCost + childCost
+                nextNode = (childState, updatedActionsList, updatedCost)
+
+                isExplored = False  # want to know if expanded child node has been visited
+                for state in explored:  # don't worry about states already explored
+                    if (childState == state) and (explored[state] < childState):
+                        isExplored = True
+                if not isExplored:
+                    frontier.push(nextNode, updatedCost + heuristic(nextNode, problem))
+                    explored[childState] = childCost
+    return actions
+
+    #util.raiseNotDefined()
 
 
 # Abbreviations
