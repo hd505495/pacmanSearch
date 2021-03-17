@@ -74,14 +74,14 @@ def tinyMazeSearch(problem):
 
 def depthFirstSearch(problem):
     """Search the deepest nodes in the search tree first."""
-    frontier = util.Stack()
+    fringe = util.Stack()
     explored = []
 
-    node = (problem.getStartState(), [])  # state and list for actions
-    frontier.push(node)
+    node = (problem.getStartState(), [])  # tuple containing state and list for actions
+    fringe.push(node)
 
-    while not frontier.isEmpty():
-        currState, actions = frontier.pop()  # take from top of stack
+    while not fringe.isEmpty():
+        currState, actions = fringe.pop()  # take from top of stack
 
         if currState not in explored:  # prevent cycles in graph
             explored.append(currState)
@@ -89,23 +89,23 @@ def depthFirstSearch(problem):
                 return actions
             else:
                 successors = problem.getSuccessors(currState)
-                for succState, succAction in successors:
-                    updatedActionsList = actions + succAction
+                for succState, succAction, succCost in successors:
+                    updatedActionsList = actions + [succAction]  # can only append list to list
                     nextNode = (succState, updatedActionsList)
-                    frontier.push(nextNode)
+                    fringe.push(nextNode)
     return actions
     #util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    frontier = util.Queue()
+    fringe = util.Queue()
     explored = []
 
-    node = (problem.getStartState(), [])  # state and list for actions
-    frontier.push(node)
+    node = (problem.getStartState(), [])  # tuple containing state and list for actions
+    fringe.push(node)
 
-    while not frontier.isEmpty():
-        currState, actions = frontier.pop()  # takes from front of queue
+    while not fringe.isEmpty():
+        currState, actions = fringe.pop()  # takes from front of queue
 
         if currState not in explored:  # prevent cycles in graph
             explored.append(currState)
@@ -113,18 +113,49 @@ def breadthFirstSearch(problem):
                 return actions
             else:
                 successors = problem.getSuccessors(currState)
-                for succState, succAction in successors:
-                    updatedActionsList = actions + succAction
+                for succState, succAction, succCost in successors:
+                    updatedActionsList = actions + [succAction]  # can only append list to list
                     nextNode = (succState, updatedActionsList)
-                    frontier.push(nextNode)
+                    fringe.push(nextNode)
     return actions
 
     #util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # this data structure does a lot of work for the ucs algorithm,
+    # so the rest of this function will look quite similar to bfs, dfs traversal
+    frontier = util.PriorityQueue()  # priority queue ordered by past cost g
+    explored = {}  # dictionary with state as key, cost as value
+
+    node = (problem.getStartState(), [], 0)  # tuple of state, action list, cost
+    # push not update here bc frontier is previously empty
+    frontier.push(node, 0)  # this push takes item and priority
+
+    while not frontier.isEmpty():
+        # pops lowest cost node due to PriorityQueue structure
+        currState, actions, currCost = frontier.pop()
+
+        # always keep least cost path for any node
+        if (currState not in explored) or (currCost < explored[currState]):
+            explored[currState] = currCost
+
+            if problem.isGoalState(currState):
+                return actions
+            else:
+                successors = problem.getSuccessors(currState)
+
+                for succState, succAction, succCost in successors:
+                    updatedActionsList = actions + [succAction]  # can only append list to list
+                    updatedCost = currCost + succCost
+                    nextNode = (succState, updatedActionsList, updatedCost)
+
+                    # If item already in priority queue with higher priority, update its priority and rebuild the heap.
+                    # If item already in priority queue with equal or lower priority, do nothing.
+                    # If item not in priority queue, do the same thing as self.push.
+                    frontier.update(nextNode, updatedCost)
+    return actions
+    #util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
     """
