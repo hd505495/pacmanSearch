@@ -163,7 +163,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     frontier = util.PriorityQueue()
-    explored = {}
+    explored = []
 
     node = (problem.getStartState(), [], 0)
     frontier.push(node, 0)
@@ -171,7 +171,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not frontier.isEmpty():
         # priority has sorted, taking lowest cost node
         currState, actions, currCost = frontier.pop()
-        explored[currState] = currCost
+        explored.append((currState, currCost))
 
         if problem.isGoalState(currState):
             return actions
@@ -182,12 +182,13 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 nextNode = (childState, updatedActionsList, updatedCost)
 
                 isExplored = False  # want to know if expanded child node has been visited
-                for state in explored:  # don't worry about states already explored
-                    if (childState == state) and (explored[state] < childState):
+                for exploredNode in explored:  # don't worry about states already explored
+                    exploredState, exploredCost = exploredNode
+                    if (childState == exploredState) and (updatedCost >= exploredCost):
                         isExplored = True
                 if not isExplored:
                     frontier.push(nextNode, updatedCost + heuristic(nextNode, problem))
-                    explored[childState] = childCost
+                    explored.append((childState, childCost))
     return actions
 
     #util.raiseNotDefined()

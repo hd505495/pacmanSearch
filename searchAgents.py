@@ -341,15 +341,15 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
             # action legal if doesnt hit wall
             if not hitsWall:
+                # keeps track of corners hit for successor state
                 successorMetCorners = list(metCorners)
                 if (nextx, nexty) in self.corners:
                     if not (nextx, nexty) in successorMetCorners:
                         # append next in list form
                         successorMetCorners += [(nextx, nexty)]
                 successorState = ((nextx, nexty), successorMetCorners)
-                successorCost = self.costfn(nextx, nexty)  # actually just 1
+                successorCost = 1
                 successors.append((successorState, action, successorCost))
-
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -363,9 +363,9 @@ class CornersProblem(search.SearchProblem):
         x,y= self.startingPosition
         for action in actions:
             dx, dy = Actions.directionToVector(action)
-            x, y = int(x + dx), int(y + dy)
+            x, y = int(x + dx), int(y + dy)  # next position
             if self.walls[x][y]: return 999999
-        return len(actions)
+        return len(actions)  # equals cost
 
 
 def cornersHeuristic(state, problem):
@@ -386,18 +386,20 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     node = state[0]
-    manhattanDistances = []  # for admissible heuristic
+    manhattanDistances = []  # manhattan is admissible and consistent
     metCorners = state[1]
     unmetCorners = []
-    for corner in corners:
-        if corner not in metCorners:
+    for corner in corners:  # game's corner coordinates
+        if corner not in metCorners:  # my list of corners that have been met
             unmetCorners.append(corner)
 
+    # if all corners met, we're done
     if len(unmetCorners) == 0:
         return 0
 
+    pointList = node[0]
     for corner in unmetCorners:
-        manhattanDistances.append(util.manhattanDistance(corner, node))
+        manhattanDistances.append(util.manhattanDistance(corner, pointList))
         unmetCorners.remove(corner)  # corner taken care of
     return min(manhattanDistances)
 
