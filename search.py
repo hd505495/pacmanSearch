@@ -108,7 +108,7 @@ def breadthFirstSearch(problem):
 
         if currState not in explored:  # prevent cycles in graph
             explored.append(currState)
-            if problem.isGoalState(node):
+            if problem.isGoalState(currState):
                 return actions
             else:
                 for childState, childAction, childCost in problem.getSuccessors(currState):
@@ -171,24 +171,29 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not frontier.isEmpty():
         # priority has sorted, taking lowest cost node
         currState, actions, currCost = frontier.pop()
-        explored.append((currState, currCost))
+        if currState not in explored:
+            explored.append((currState, currCost))
 
         if problem.isGoalState(currState):
             return actions
         else:
             for childState, childAction, childCost in problem.getSuccessors(currState):
                 updatedActionsList = actions + [childAction]  # can only append list to list
-                updatedCost = currCost + childCost
+                #updatedCost = currCost + childCost
+                updatedCost = problem.getCostOfActions(updatedActionsList)
                 nextNode = (childState, updatedActionsList, updatedCost)
 
                 isExplored = False  # want to know if expanded child node has been visited
                 for exploredNode in explored:  # don't worry about states already explored
                     exploredState, exploredCost = exploredNode
-                    if (childState == exploredState) and (updatedCost >= exploredCost):
-                        isExplored = True
+                    if childState == exploredState:
+                        # only disregard when expanded child's cost is more
+                        if updatedCost >= exploredCost:
+                            isExplored = True
                 if not isExplored:
-                    frontier.push(nextNode, updatedCost + heuristic(nextNode, problem))
-                    explored.append((childState, childCost))
+                    # frontier.push(nextNode, updatedCost + heuristic(childState, problem))
+                    frontier.push(nextNode, updatedCost)
+                    # explored.append((childState, childCost))
     return actions
 
     #util.raiseNotDefined()
